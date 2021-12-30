@@ -1,0 +1,140 @@
+---
+title: "Covid19 Analysis"
+author: "Numrah Alauddin"
+date: "12/10/2021"
+output:
+  html_document:
+    df_print: paged
+  word_document: default
+  pdf_document: default
+---
+```{r}
+#Library Defined
+
+knitr::opts_chunk$set(error = TRUE)
+library(Hmisc)
+library(factoextra)
+library(dplyr)
+```
+
+
+Comment:
+library(Hmisc): it contains many functions useful for data analysis, high-level graphics,utility operations, functions for computing sample size 
+library(factoextra): is used to extract and visualize the output of exploratory multivariate data analysis.
+library(dplyr):The package contains a set of functions (or “verbs”) that perform common data manipulation operations such as filtering for rows, selecting specific columns, re-ordering rows, adding new columns and summarizing data.
+
+
+```{r}
+#File that have been called for the data
+
+data <- read.csv("C:/Users/ARSALAN IQBAL/Downloads/COVID19_line_list_data.csv")
+data <- select(data,-c(X.1:X.6))
+data <- select(data,-c(X))
+data_copied <- data
+describe(data)
+data_copied$death_dummy <- as.integer(data$death !=0)
+data_copied <- select(data_copied,-c(2,9,10,11,12,13,18,19))
+data_copied <- na.omit(data_copied)
+summary(data_copied)
+```
+
+
+Comment:
+Summary() function displays the data after cleaning it from the junk data i.e. N/A data or NaN data is omitted to increase the accuracy of data. Thus, increasing the efficiency of results.
+All the statistical data is displayed in the last of summary. All columns that has integer values resulted in these statistical data. This data will further be used to conclude promising results.
+
+
+
+
+```{r}
+#Deaths of the patients
+
+death_all = subset(data_copied,death_dummy == 1)
+hist(death_all$age, col='maroon',main='Deaths of All Covid Effecties w.r.t Age',xlab="Age")
+```
+
+
+Comment:
+Histogram above shows that counts of death increases with the increase of age. Thus, age factor imposes a great impact on death due to COVID virus. Therefore, we can construct a result that greater the age, greater will the chance of death due to virus.
+
+
+
+```{r}
+#Gender wise Deaths (Male)
+
+men <- subset(data_copied, gender == "male")
+mendeath <- subset(men,death_dummy == 1)
+hist(mendeath$age, col='brown',main='Deaths of Male Covid Effecties w.r.t Age',xlab="Age")
+```
+
+
+
+Comment:
+Histogram above shows that male counts of death increases with the increase of age. Thus, age factor imposes a great impact on death due to COVID virus. Therefore, we can construct a result that greater the age, greater will the chance of death due to virus.
+
+
+
+
+
+
+
+```{R}
+#Gender wise Deaths (Female)
+
+women <- subset(data_copied, gender == "female")
+womendeath <- subset(women,death_dummy == 1)
+hist(womendeath$age, col='light blue',main='Deaths of Female Covid Effecties w.r.t Age',xlab="Age")
+```
+
+
+
+Comment:
+Histogram above shows that counts of overall death increases with the increase of age. Thus, age factor imposes a great impact on death due to COVID virus. Therefore, we can construct a result that greater the age, greater will the chance of death due to virus.
+
+
+
+
+
+```{R}
+#Called Principle Component Analysis on our data
+
+head(data_copied)
+data_copiedpc <- data_copied[,c(7,8,9)]
+pc.data <- princomp(data_copiedpc, cor = TRUE)
+screeplot(pc.data,type="l", main="Screeplot for the Covid Data")
+abline(1,0,col= 'red',lty=2)
+```
+
+
+
+Comment:
+Screeplot here indicates the out of 3 principle components i.e. (i) age, (ii) visiting wuhan and (iii) from wuhan, data majorly shows deviation from the Age components. It shows that whole data majorly variates with the age variable.
+
+
+```{r}
+#Regression and Data Validation
+
+death_dummy <- as.integer(data$death !=0)
+plot(data_copied$age,data_copied$death_dummy,main="Data Validation",xlab = "Age",ylab = "Probability")
+```
+
+
+
+Comment:
+Apart from Regression, above figure shows that the data does not have any error. Patient/effected person is either death due to virus contraction or survived after contracted the virus. Also, it shows that majority of the patients were recovered from virus while the death ones are concentrated in older ages above 35-years.
+
+
+
+```{r}
+#Clustering of Age, From Wuhan, Visiting Wuhan and Deaths
+
+data_ultra <- select(data_copied,-c(1,2,3,4,5,6,10,11,12))
+data_ultra <- na.omit(data_ultra)
+km <- kmeans(data_ultra, centers = 5, nstart = 100)
+fviz_cluster(km, data = data_ultra)
+```
+
+
+
+Comment:
+K-mean clustering shows the deviation of the prescribed 04 principle components from their centroid values i.e. Age, Visiting Wuhan, From Wuhan and Deaths. 5 clusters are made and displayed on right side of the cluster plot. To clean the data that included unoccupied column, we used omit command which ultimately deletes the rows with one or more vacant columns.
