@@ -57,27 +57,14 @@ fviz_eig(pc.data)
 screeplot(pc.data,type="l", main="screeplot for the covid data")
 abline(1,0,col= 'red',lty=2)
 
-#REGRESSION
+#Confusion matrix
 
-plot(data_copied$age,data_copied$death_dummy)
+table(data_copied$death_dummy)
+mymodel=glm(death_dummy~visiting.Wuhan+from.Wuhan+age,family=binomial,data_copied)
+print(mymodel)
+pmymodel=predict(mymodel,data_copied)
+tab=table(pmymodel>0.5,data_copied$death_dummy)
 
-#CLUSTERING
-
-data_ultra <- select(data_copied,-c(1,2,3,4,5,6,10,11,12))
-data_ultra <- na.omit(data_ultra)
-
-km <- kmeans(data_ultra, centers = 5, nstart = 100)
-fviz_cluster(km,data_ultra)
-
-#clustering between Age and Death Dummy
-km <- kmeans(data_ultra, centers = 5, nstart = 100)
-fviz_cluster(km, data = data_ultra,-c(2,3))
-
-#clustering between Age and From Wuhan
-km <- kmeans(data_ultra, centers = 5, nstart = 100)
-fviz_cluster(km, data = data_ultra,-c(2,4))
-
-#clustering between Age and visiting Wuhan
-km <- kmeans(data_ultra, centers = 30, nstart = 50)
-fviz_cluster(km, data = data_ultra,-c(3,4))
-
+print(tab)
+accuracy <- sum(diag(tab))/sum(tab)*100
+print(accuracy)
