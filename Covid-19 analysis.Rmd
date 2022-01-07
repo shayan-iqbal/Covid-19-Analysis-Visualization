@@ -112,29 +112,17 @@ Screeplot here indicates the out of 3 principle components i.e. (i) age, (ii) vi
 
 
 ```{r}
-#Regression and Data Validation
+#Confusion matrix
 
-death_dummy <- as.integer(data$death !=0)
-plot(data_copied$age,data_copied$death_dummy,main="Data Validation",xlab = "Age",ylab = "Probability")
+table(data_copied$death_dummy)
+mymodel=glm(death_dummy~visiting.Wuhan+from.Wuhan+age,family=binomial,data_copied)
+print(mymodel)
+pmymodel=predict(mymodel,data_copied)
+tab=table(pmymodel>0.5,data_copied$death_dummy)
+
+print(tab)
+accuracy <- sum(diag(tab))/sum(tab)*100
+print(accuracy)
 ```
 
-
-
-Comment:
-Apart from Regression, above figure shows that the data does not have any error. Patient/effected person is either death due to virus contraction or survived after contracted the virus. Also, it shows that majority of the patients were recovered from virus while the death ones are concentrated in older ages above 35-years.
-
-
-
-```{r}
-#Clustering of Age, From Wuhan, Visiting Wuhan and Deaths
-
-data_ultra <- select(data_copied,-c(1,2,3,4,5,6,10,11,12))
-data_ultra <- na.omit(data_ultra)
-km <- kmeans(data_ultra, centers = 5, nstart = 100)
-fviz_cluster(km, data = data_ultra)
-```
-
-
-
-Comment:
-K-mean clustering shows the deviation of the prescribed 04 principle components from their centroid values i.e. Age, Visiting Wuhan, From Wuhan and Deaths. 5 clusters are made and displayed on right side of the cluster plot. To clean the data that included unoccupied column, we used omit command which ultimately deletes the rows with one or more vacant columns.
+comment: This matrix showes the accuracy of our data.
